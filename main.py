@@ -6,6 +6,8 @@ import json
 from threading import Thread
 import os
 from random import randint
+import gc
+import pygame
 BACKGROUNDMUSIC = [[3,4,4,3,4,4,3,4,4,3,4,4,3,4,3,4],
                    [5,6,6,5,6,6,5,6,6,5,6,6,5,6,5,6],
                    [7,8,8,7,8,8,7,8,8,7,8,8,7,8,7,8],
@@ -21,7 +23,9 @@ def on_key_event(e):
     queue.append(e.scan_code)
 
 def play_sound(folder, index):
-    playsound.playsound(os.path.join(folder, str(index)+".mp3"),False)
+    sound = pygame.mixer.Sound(os.path.join(folder, str(index)+".mp3"))
+    sound.play()
+    # playsound.playsound(os.path.join(folder, str(index)+".mp3"),False)
 
 def background():
     i = 0
@@ -32,6 +36,8 @@ def background():
                 play_sound("track", d)
                 time.sleep(duration)
                 i+=1
+        if i==4:
+            i=0
 
 def feedback():
     global queue
@@ -42,14 +48,16 @@ def feedback():
             else:
                 sound = queue[0]
                 play_sound("main", sound%32)
-            queue = []
+            queue.clear()
         time.sleep(duration)
 
 def main():
+    pygame.mixer.init()
     Thread(target=background).start()
     Thread(target=feedback).start()
     while 1:
         keyboard.on_press(on_key_event)
+        gc.collect()
         time.sleep(10)
 
 
